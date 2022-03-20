@@ -1,0 +1,17 @@
+{
+  "name": "upload-unit",
+  "version": "1.0.0",
+  "description": "A GitHub Action for uploading a unit to Cratecode.",
+  "main": "index.js",
+  "repository": "https://github.com/Cratecode/upload-unit.git",
+  "author": "Cratecode",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/parser": "^5.15.0",
+    "eslint": "^8.11.0",
+    "prettier": "^2.6.0",
+    "typescript": "^4.6.2"
+  }
+}
