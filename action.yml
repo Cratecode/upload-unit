@@ -13,6 +13,10 @@ inputs:
     required: false
     description: "The domain to upload to."
     default: "https://cratecode.com"
+  websocket:
+    required: false
+    description: "The websocket location."
+    default: "wss://cratecode.com/container/"
 runs:
   using: "node16"
   main: "dist/index.js"

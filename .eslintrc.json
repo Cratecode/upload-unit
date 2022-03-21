@@ -12,7 +12,7 @@
     "plugins": ["@typescript-eslint"],
     "rules": {
         "linebreak-style": ["error", "unix"],
-        "quotes": ["error", "double"],
+        "quotes": ["error", "double", { "avoidEscape": true }],
         "semi": ["error", "always"],
         "object-curly-spacing": ["error", "always"],
         "array-bracket-spacing": ["error", "never"],
