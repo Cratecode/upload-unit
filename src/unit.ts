@@ -7,14 +7,12 @@ import { delay, State } from "./index";
  * @param state {State} - is the application's state.
  * @param id {string} - is the friendly name of the unit.
  * @param name {string} - is the display name of the unit.
- * @param start {string} - is the initial lesson for the unit.
  * @param lessons {Record<string, object>} - is the lessons map for the unit.
  */
 export async function handleUnit(
     state: State,
     id: string,
     name: string,
-    start: string,
     lessons: Record<string, { next: string[]; requires: string[] }>,
 ): Promise<void> {
     // First, we need to figure out what the actual ID of our unit is.
@@ -38,9 +36,6 @@ export async function handleUnit(
             throw e;
         });
     await delay(state);
-
-    // Next, let's convert start from a friendly name to an ID.
-    const newStart = await mapKey(start, state);
 
     // Next, we need to go through the lessons and map from friendly names to ids.
     const map: Record<string, { next: string[]; requires: string[] }> = {};
@@ -79,10 +74,7 @@ export async function handleUnit(
             id: actualID,
             friendlyName: id,
             name,
-            data: {
-                start: newStart,
-                map,
-            },
+            data: map,
         },
         {
             headers: {

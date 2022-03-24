@@ -48,19 +48,16 @@ export async function readManifest(
             case "unit": {
                 const id = data["id"];
                 const name = data["name"];
-                const start = data["start"];
                 const lessons = data["lessons"];
 
                 if (typeof id !== "string")
                     throw new Error("id must be a string!");
                 if (typeof name !== "string")
                     throw new Error("name must be a string!");
-                if (typeof start !== "string")
-                    throw new Error("start must be a string!");
                 if (typeof lessons !== "object" || Array.isArray(lessons))
                     throw new Error("lessons must be an object!");
 
-                await handleUnit(state, id, name, start, lessons);
+                await handleUnit(state, id, name, lessons);
                 break;
             }
             case "lesson": {
