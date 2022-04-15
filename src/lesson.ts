@@ -11,6 +11,7 @@ import * as ProxyInMain from "./proto_proxy_in/main";
 import * as ProxyInDeleteFile from "./proto_proxy_in/delete_file";
 import * as ProxyInSetFile from "./proto_proxy_in/set_file";
 import { TextEncoder } from "util";
+import FormData from "form-data";
 
 /**
  * Handles a lesson manifest.
@@ -88,7 +89,7 @@ export async function handleLesson(
     if (!project) throw new Error("Could not create or find a project!");
 
     // Now that we have a project ID, we can update the lesson entry.
-    await axios.put(
+    const lessonID = await axios.put(
         new URL("/internal/api/lesson/new", core.getInput("domain")).toString(),
         {
             id: actualID,
@@ -101,8 +102,32 @@ export async function handleLesson(
                 authorization: core.getInput("key"),
             },
         },
-    );
+    ).then((res) => res.data.id as string);
     await delay(state);
+
+    // If there's still no lesson, throw an error.
+    if (!lessonID) throw new Error("Could not create or find a lesson!");
+
+    // Now, we need to upload the video, if it exists.
+    if(fs.existsSync(Path.join(dir, "video.cv"))) {
+        const videoForm = new FormData();
+        videoForm.append("video", fs.createReadStream(Path.join(dir, "video.cv")));
+
+        await axios.put(
+            new URL(
+                "/internal/api/video/upload/" + lessonID,
+                core.getInput("domain"),
+            ).toString(),
+            videoForm,
+            {
+                headers: {
+                    ...videoForm.getHeaders(),
+                    authorization: core.getInput("key"),
+                },
+            },
+        );
+        await delay(state);
+    }
 
     // TODO: Move this into a new async "task", so that its sleeps are separate.
 
@@ -123,7 +148,7 @@ export async function handleLesson(
         if (!entry[1].isFile()) continue;
 
         const newPath = Path.relative(dir, entry[0]);
-        if (newPath === "manifest.json") continue;
+        if (newPath === "manifest.json" || newPath === "video.cv") continue;
 
         files[newPath] = await fs.promises.readFile(entry[0], "utf-8");
     }
