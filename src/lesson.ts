@@ -13,6 +13,8 @@ import * as ProxyInSetFile from "./proto_proxy_in/set_file";
 import { TextEncoder } from "util";
 import FormData from "form-data";
 
+export const websockets: WebSocket[] = [];
+
 /**
  * Handles a lesson manifest.
  * @param state {State} - is the application's state.
@@ -250,6 +252,8 @@ export async function handleLesson(
             }
         }
     });
+
+    websockets.push(ws);
 
     // Sleep for 10 seconds for the upload.
     await sleep(10 * 1000);

@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import { readManifest } from "./manifest";
+import {websockets} from "./lesson";
 
 (async () => {
     const manifest = core.getInput("manifest");
@@ -11,6 +12,22 @@ import { readManifest } from "./manifest";
 
     // Open the initial manifest.
     await readManifest(state, null, manifest);
+
+    // Now, we should clean up websockets. If all websockets are closed, we can safely exit
+    // the program, otherwise we should wait 30 seconds, then force close them and force exit after 5 seconds.
+    if(websockets.some(ws => ws.readyState !== ws.CLOSED)) {
+        setTimeout(() => {
+            for (const ws of websockets) {
+                if(ws.readyState !== ws.CLOSED) {
+                    ws.close();
+                }
+            }
+
+            setTimeout(() => {
+                process.exit(0);
+            }, 5000);
+        }, 30 * 1000);
+    }
 })();
 
 /**
