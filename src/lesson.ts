@@ -20,12 +20,14 @@ export const websockets: WebSocket[] = [];
  * @param state {State} - is the application's state.
  * @param id {string} - is the friendly name of the lesson.
  * @param name {string} - is the display name of the lesson.
+ * @param spec {string | null} - is the specification of the lesson.
  * @param dir {string} - is the directory that this manifest is contained in.
  */
 export async function handleLesson(
     state: State,
     id: string,
     name: string,
+    spec: string | null,
     dir: string,
 ): Promise<void> {
     // We need to first figure out what the ID of this lesson is.
@@ -91,29 +93,38 @@ export async function handleLesson(
     if (!project) throw new Error("Could not create or find a project!");
 
     // Now that we have a project ID, we can update the lesson entry.
-    const lessonID = await axios.put(
-        new URL("/internal/api/lesson/new", core.getInput("domain")).toString(),
-        {
-            id: actualID,
-            friendlyName: id,
-            name,
-            project,
-        },
-        {
-            headers: {
-                authorization: core.getInput("key"),
+    const lessonID = await axios
+        .put(
+            new URL(
+                "/internal/api/lesson/new",
+                core.getInput("domain"),
+            ).toString(),
+            {
+                id: actualID,
+                friendlyName: id,
+                name,
+                project,
+                spec,
             },
-        },
-    ).then((res) => res.data.id as string);
+            {
+                headers: {
+                    authorization: core.getInput("key"),
+                },
+            },
+        )
+        .then((res) => res.data.id as string);
     await delay(state);
 
     // If there's still no lesson, throw an error.
     if (!lessonID) throw new Error("Could not create or find a lesson!");
 
     // Now, we need to upload the video, if it exists.
-    if(fs.existsSync(Path.join(dir, "video.cv"))) {
+    if (fs.existsSync(Path.join(dir, "video.cv"))) {
         const videoForm = new FormData();
-        videoForm.append("video", fs.createReadStream(Path.join(dir, "video.cv")));
+        videoForm.append(
+            "video",
+            fs.createReadStream(Path.join(dir, "video.cv")),
+        );
 
         await axios.put(
             new URL(

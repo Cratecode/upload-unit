@@ -63,13 +63,22 @@ export async function readManifest(
             case "lesson": {
                 const id = data["id"];
                 const name = data["name"];
+                const spec = data["spec"];
 
                 if (typeof id !== "string")
                     throw new Error("id must be a string!");
                 if (typeof name !== "string")
                     throw new Error("name must be a string!");
+                if (typeof spec !== "string" && spec !== null)
+                    throw new Error("spec must be a string or null!");
 
-                await handleLesson(state, id, name, Path.dirname(manifest));
+                await handleLesson(
+                    state,
+                    id,
+                    name,
+                    spec,
+                    Path.dirname(manifest),
+                );
                 break;
             }
             default: {
