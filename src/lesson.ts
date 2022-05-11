@@ -21,6 +21,7 @@ export const websockets: WebSocket[] = [];
  * @param id {string} - is the friendly name of the lesson.
  * @param name {string} - is the display name of the lesson.
  * @param spec {string | null} - is the specification of the lesson.
+ * @param templateDir {string | null} - is the directory that contains template files for this lesson.
  * @param dir {string} - is the directory that this manifest is contained in.
  */
 export async function handleLesson(
@@ -28,6 +29,7 @@ export async function handleLesson(
     id: string,
     name: string,
     spec: string | null,
+    templateDir: string | null,
     dir: string,
 ): Promise<void> {
     // We need to first figure out what the ID of this lesson is.
@@ -155,15 +157,23 @@ export async function handleLesson(
     // wait 10 seconds for any containers that need to close,
     // to close.
     const files: Record<string, string> = {};
-    for (const entry of Object.entries(
-        await walkdir.async(dir, { return_object: true }),
-    )) {
+
+    // Walk the template directory first (if it exists), then override
+    // with the files in the lesson directory.
+    const walk = async (dir: string) =>
+        Object.entries(await walkdir.async(dir, { return_object: true })).map<
+            [string, fs.Stats, string]
+        >(([path, stats]) => [path, stats, Path.relative(dir, path)]);
+
+    const walkEntries = await walk(dir);
+    if (templateDir != null) walkEntries.unshift(...(await walk(templateDir)));
+
+    for (const entry of walkEntries) {
         if (!entry[1].isFile()) continue;
 
-        const newPath = Path.relative(dir, entry[0]);
-        if (newPath === "manifest.json" || newPath === "video.cv") continue;
+        if (entry[2] === "manifest.json" || entry[2] === "video.cv") continue;
 
-        files[newPath] = await fs.promises.readFile(entry[0], "utf-8");
+        files[entry[2]] = await fs.promises.readFile(entry[0], "utf-8");
     }
 
     // First, we'll need a token to access the websocket.
