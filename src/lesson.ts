@@ -120,7 +120,31 @@ export async function handleLesson(
     // If there's still no lesson, throw an error.
     if (!lessonID) throw new Error("Could not create or find a lesson!");
 
-    // Now, we need to upload the video, if it exists.
+    // Now, we need to upload the config file, if it exists.
+    if (fs.existsSync(Path.join(dir, "config.json"))) {
+        const configForm = new FormData();
+        configForm.append(
+            "config",
+            fs.createReadStream(Path.join(dir, "config.json")),
+        );
+
+        await axios.put(
+            new URL(
+                "/internal/api/config/upload/" + lessonID,
+                core.getInput("domain"),
+            ).toString(),
+            configForm,
+            {
+                headers: {
+                    ...configForm.getHeaders(),
+                    authorization: core.getInput("key"),
+                },
+            },
+        );
+        await delay(state);
+    }
+
+    // Next, we need to upload the video, if it exists.
     if (fs.existsSync(Path.join(dir, "video.cv"))) {
         const videoForm = new FormData();
         videoForm.append(
@@ -171,7 +195,7 @@ export async function handleLesson(
     for (const entry of walkEntries) {
         if (!entry[1].isFile()) continue;
 
-        if (entry[2] === "manifest.json" || entry[2] === "video.cv") continue;
+        if (["manifest.json", "video.cv", "config.json"].includes(entry[2])) continue;
 
         files[entry[2]] = await fs.promises.readFile(entry[0], "utf-8");
     }
