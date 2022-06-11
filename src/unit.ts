@@ -51,8 +51,8 @@ export async function handleUnit(
         const newKey = await mapKey(key, state);
 
         // Map next and previous.
-        const next = lessons[key].next;
-        const previous = lessons[key].previous;
+        const next = lessons[key].next ?? [];
+        const previous = lessons[key].previous ?? [];
 
         if (typeof next !== "object" || !Array.isArray(next))
             throw new Error("next must be a string array!");
