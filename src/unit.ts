@@ -13,7 +13,10 @@ export async function handleUnit(
     state: State,
     id: string,
     name: string,
-    lessons: Record<string, { next: string[]; requires: string[] }>,
+    lessons: Record<
+        string,
+        { next: string[]; requires: string[]; requireAll?: boolean }
+    >,
 ): Promise<void> {
     // First, we need to figure out what the actual ID of our unit is.
     // If there isn't one, we'll just set it to null.
@@ -38,7 +41,10 @@ export async function handleUnit(
     await delay(state);
 
     // Next, we need to go through the lessons and map from friendly names to ids.
-    const map: Record<string, { next: string[]; requires: string[] }> = {};
+    const map: Record<
+        string,
+        { next: string[]; requires: string[]; requireAll: boolean }
+    > = {};
 
     for (const key in lessons) {
         // Map the key.
@@ -64,7 +70,11 @@ export async function handleUnit(
             newRequires.push(await mapKey(item, state));
         }
 
-        map[newKey] = { next: newNext, requires: newRequires };
+        map[newKey] = {
+            next: newNext,
+            requires: newRequires,
+            requireAll: Boolean(lessons[key].requireAll),
+        };
     }
 
     // Create or update the unit.
