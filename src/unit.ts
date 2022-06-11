@@ -15,7 +15,7 @@ export async function handleUnit(
     name: string,
     lessons: Record<
         string,
-        { next: string[]; requires: string[]; requireAll?: boolean }
+        { next: string[]; previous: string[]; requireAll?: boolean }
     >,
 ): Promise<void> {
     // First, we need to figure out what the actual ID of our unit is.
@@ -43,36 +43,36 @@ export async function handleUnit(
     // Next, we need to go through the lessons and map from friendly names to ids.
     const map: Record<
         string,
-        { next: string[]; requires: string[]; requireAll: boolean }
+        { next: string[]; previous: string[]; requireAll: boolean }
     > = {};
 
     for (const key in lessons) {
         // Map the key.
         const newKey = await mapKey(key, state);
 
-        // Map next and requires.
+        // Map next and previous.
         const next = lessons[key].next;
-        const requires = lessons[key].requires;
+        const previous = lessons[key].previous;
 
         if (typeof next !== "object" || !Array.isArray(next))
             throw new Error("next must be a string array!");
-        if (typeof requires !== "object" || !Array.isArray(requires))
-            throw new Error("requires must be a string array!");
+        if (typeof previous !== "object" || !Array.isArray(previous))
+            throw new Error("previous must be a string array!");
 
         const newNext: string[] = [];
-        const newRequires: string[] = [];
+        const newPrevious: string[] = [];
 
         for (const item of next) {
             newNext.push(await mapKey(item, state));
         }
 
-        for (const item of requires) {
-            newRequires.push(await mapKey(item, state));
+        for (const item of previous) {
+            newPrevious.push(await mapKey(item, state));
         }
 
         map[newKey] = {
             next: newNext,
-            requires: newRequires,
+            previous: newPrevious,
             requireAll: Boolean(lessons[key].requireAll),
         };
     }
