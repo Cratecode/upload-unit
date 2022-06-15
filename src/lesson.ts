@@ -217,89 +217,126 @@ export async function handleLesson(
     if (!token) throw new Error("Could not get a token!");
 
     // Next, let's open a websocket channel.
+    return uploadFiles(token, files);
+}
+
+function uploadFiles(token: string, files: Record<string, string>) : Promise<void> {
+    const filesBackup = { ...files };
+
     const ws = new WebSocket(
         new URL("/control/" + token, core.getInput("websocket")).toString(),
     );
     ws.binaryType = "arraybuffer";
 
-    ws.on("message", (data) => {
-        if (!(data instanceof ArrayBuffer)) return;
-
-        const message = ProxyOut.Main.fromBinary(new Uint8Array(data));
-
-        switch (message.type) {
-            case ProxyOut.MessageType.Initialized: {
-                // Request files.
-
-                const message = ProxyInMain.Main.toBinary({
-                    type: ProxyInMain.MessageType.GetFiles,
-                });
-
-                ws.send(message);
-
-                break;
-            }
-            case ProxyOut.MessageType.Files: {
-                if (!message.value) break;
-
-                const inner_message = ProxyOutFiles.Files.fromBinary(
-                    message.value,
-                );
-
-                // First, delete any files that don't exist in our list of files.
-                const items = Object.keys(files);
-                for (const file of inner_message.files) {
-                    // If our list of new items doesn't include this item,
-                    // delete it.
-                    if (!items.includes(file.path)) {
-                        const delete_file_inner =
-                            ProxyInDeleteFile.DeleteFile.toBinary({
-                                path: file.path,
-                            });
-
-                        const delete_file = ProxyInMain.Main.toBinary({
-                            type: ProxyInMain.MessageType.DeleteFile,
-                            value: delete_file_inner,
-                        });
-
-                        ws.send(delete_file);
-                    }
-                }
-
-                // Next, we'll filter out any items that already exist in the container.
-                for (const file of inner_message.files) {
-                    // If the item already exists in the container,
-                    // no need to re-upload it.
-                    if (files[file.path] === file.data?.toString()) {
-                        delete files[file.path];
-                    }
-                }
-
-                // Finally, we need to upload our files.
-                for (const file in files) {
-                    const set_file_inner = ProxyInSetFile.SetFile.toBinary({
-                        path: file,
-                        data: new TextEncoder().encode(files[file]),
-                    });
-
-                    const set_file = ProxyInMain.Main.toBinary({
-                        type: ProxyInMain.MessageType.SetFile,
-                        value: set_file_inner,
-                    });
-
-                    ws.send(set_file);
-                }
-
-                // Now that we're done, we can close the websocket.
-                ws.close();
-
-                break;
-            }
-        }
-    });
-
     websockets.push(ws);
 
-    // Sleep for 10 seconds for the upload.
-    await sleep(10 * 1000);
+    // Now, we'll create a promise that handles sending the files.
+    return new Promise<void>((resolve) => {
+        let finished = false;
+
+        ws.on("message", (data) => {
+            if (!(data instanceof ArrayBuffer)) return;
+
+            const message = ProxyOut.Main.fromBinary(new Uint8Array(data));
+
+            switch (message.type) {
+                case ProxyOut.MessageType.Initialized: {
+                    // Request files.
+
+                    const message = ProxyInMain.Main.toBinary({
+                        type: ProxyInMain.MessageType.GetFiles,
+                    });
+
+                    ws.send(message);
+
+                    break;
+                }
+                case ProxyOut.MessageType.NotInitialized: {
+                    // TODO: Find out why this gets triggered so frequently.
+
+                    // If we receive NotInitialized, we should wait
+                    // a little and retry. We'll set finished to true
+                    // to prevent it from continuing.
+                    console.warn("Received NotInitialized, retrying...");
+
+                    finished = true;
+                    ws.close();
+
+                    setTimeout(() => {
+                        uploadFiles(token, filesBackup).then(resolve);
+                    }, 1000);
+
+                    break;
+                }
+                case ProxyOut.MessageType.Files: {
+                    if (!message.value) break;
+
+                    const inner_message = ProxyOutFiles.Files.fromBinary(
+                        message.value,
+                    );
+
+                    // First, delete any files that don't exist in our list of files.
+                    const items = Object.keys(files);
+                    for (const file of inner_message.files) {
+                        // If our list of new items doesn't include this item,
+                        // delete it.
+                        if (!items.includes(file.path)) {
+                            const delete_file_inner =
+                                ProxyInDeleteFile.DeleteFile.toBinary({
+                                    path: file.path,
+                                });
+
+                            const delete_file = ProxyInMain.Main.toBinary({
+                                type: ProxyInMain.MessageType.DeleteFile,
+                                value: delete_file_inner,
+                            });
+
+                            ws.send(delete_file);
+                        }
+                    }
+
+                    // Next, we'll filter out any items that already exist in the container.
+                    for (const file of inner_message.files) {
+                        // If the item already exists in the container,
+                        // no need to re-upload it.
+                        if (files[file.path] === file.data?.toString()) {
+                            delete files[file.path];
+                        }
+                    }
+
+                    // Finally, we need to upload our files.
+                    for (const file in files) {
+                        const set_file_inner = ProxyInSetFile.SetFile.toBinary({
+                            path: file,
+                            data: new TextEncoder().encode(files[file]),
+                        });
+
+                        const set_file = ProxyInMain.Main.toBinary({
+                            type: ProxyInMain.MessageType.SetFile,
+                            value: set_file_inner,
+                        });
+
+                        ws.send(set_file);
+                    }
+
+                    // Now that we're done, we can close the websocket.
+                    setTimeout(() => ws.close(), 1000);
+
+                    // And finally, resolve the promise.
+                    finished = true;
+                    resolve();
+
+                    break;
+                }
+            }
+        });
+
+        // If it exceeds 10 seconds, we'll resolve the promise.
+        sleep(10 * 1000).then(() => {
+            if (finished) return;
+
+            console.warn("Timed out waiting for websocket to close.");
+            resolve();
+        });
+    });
 }
