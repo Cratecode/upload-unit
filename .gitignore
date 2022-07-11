@@ -1,6 +1,5 @@
 .idea/
 node_modules/
-dist/
 *.iml
 yarn-error.log
 .env
