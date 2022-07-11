@@ -1,6 +1,9 @@
 name: "Upload Unit"
 description: "Uploads a unit to Cratecode, as well as any included lessons."
 author: "Cratecode"
+branding:
+    icon: upload
+    color: blue
 inputs:
     key:
         required: true
