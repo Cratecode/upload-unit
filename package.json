@@ -10,16 +10,16 @@
     "author": "Cratecode",
     "license": "Apache-2.0",
     "dependencies": {
-        "@actions/core": "^1.9.0",
-        "@cratecode/client": "^1.0.6"
+        "@actions/core": "^1.9.1",
+        "@cratecode/client": "^1.0.8"
     },
     "devDependencies": {
-        "@types/node": "^18.0.0",
-        "@typescript-eslint/eslint-plugin": "^5.28.0",
-        "@typescript-eslint/parser": "^5.28.0",
-        "eslint": "^8.17.0",
-        "prettier": "^2.7.0",
-        "typescript": "^4.7.3"
+        "@types/node": "^18.7.18",
+        "@typescript-eslint/eslint-plugin": "^5.37.0",
+        "@typescript-eslint/parser": "^5.37.0",
+        "eslint": "^8.23.1",
+        "prettier": "^2.7.1",
+        "typescript": "^4.8.3"
     },
     "optionalDependencies": {}
 }
