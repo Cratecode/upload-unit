@@ -11,7 +11,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "@actions/core": "^1.9.1",
-        "@cratecode/client": "^1.0.8"
+        "@cratecode/client": "^1.0.9"
     },
     "devDependencies": {
         "@types/node": "^18.7.18",
