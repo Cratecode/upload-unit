@@ -1,6 +1,6 @@
 # Upload Unit
 
-Upload Unit is a GitHub Action to upload a unit to Cratecode. It handles uploading lessons, subunits, and units, all under a single action.
+Upload Unit is a GitHub Action to upload a unit to [Cratecode](https://cratecode.com). It handles uploading lessons, subunits, and units, all under a single action.
 
 # Examples
 
