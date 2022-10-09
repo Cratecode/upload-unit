@@ -15,5 +15,8 @@ steps:
           manifest: path/to/manifest.json
           key: ${{ secrets.CRATECODE_API_KEY }}
 ```
+You can get an API key at https://cratecode.com/account (`API` tab).
+
+## Creating Manifests
 
 For more info on how to create lessons and units, head over to the [CLI repository](https://github.com/Cratecode/cli.git).
