@@ -17,10 +17,10 @@
   dependencies:
     tunnel "^0.0.6"
 
-"@cratecode/client@^1.0.10":
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/@cratecode/client/-/client-1.0.10.tgz#1a824443db7db65b668dfda5239f67e105c745fe"
-  integrity sha512-KhAB72ugUqxSc5ebpVlB/Dkgfo/OwgiKv95ZrQ5aQ6GA9VrmQJr+vAZUFHMJytwCBsbl7CpREgvjOSraCHdgCg==
+"@cratecode/client@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@cratecode/client/-/client-1.0.11.tgz#4e0cb27200e8c5cf2910ee9db7b3030ac21bf844"
+  integrity sha512-mE2Nj9xl85/jcN3nSzwmpAmfmA0LkYPBJoVMd8fwHEJ09i4+OH9UWOMoguc2iHlJYWGtrNJS7gmftYu5/OVnJw==
   dependencies:
     "@protobuf-ts/runtime" "^2.8.1"
     axios "^0.27.2"
