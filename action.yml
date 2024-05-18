@@ -13,5 +13,5 @@ inputs:
         description: "The manifest file to use to upload."
         default: "manifest.json"
 runs:
-    using: "node16"
+    using: "node20"
     main: "dist/index.js"
