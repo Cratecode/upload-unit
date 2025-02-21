@@ -1,6 +1,6 @@
 {
     "name": "upload-unit",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "scripts": {
         "build": "tsc"
     },
